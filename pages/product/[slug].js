@@ -1,19 +1,16 @@
-import React, { useState } from 'react'
-import { client, urlFor } from '../../lib/client'
-import { AiOutlineMinus, AiOutlinePlus } from 'react-icons/ai'
-import {CgShoppingCart} from 'react-icons/cg'
+import React, { useState } from 'react';
+import { client, urlFor } from '../../lib/client';
+import { AiOutlineMinus, AiOutlinePlus } from 'react-icons/ai';
+import { CgShoppingCart } from 'react-icons/cg';
 import { useStateContext } from '../../context/StateContext';
+import Image from 'next/image'; // Importing Image component
 
-const ProductDetails = ({products, product}) => {
+const ProductDetails = ({ product }) => {
     const { image, name, details, price, tags, care } = product;
     const [index, setIndex] = useState(0);
-    const {decQty, incQty, qty, onAdd} = useStateContext();
+    const { decQty, incQty, qty, onAdd } = useStateContext();
 
-    const careList = [];
-
-    {for (let i = 0; i < care.length; i++) {
-        careList.push(care[i].children[0].text)
-    }}
+    const careList = care.map(item => item.children[0].text);
 
     return (
         <div className='products'>
@@ -21,21 +18,31 @@ const ProductDetails = ({products, product}) => {
                 <div className='product-images'>
                     <div className='small-images-container'>
                         {image?.map((item, ind) => (
-                            <img 
-                            key={ind}
-                            src={urlFor(item)} 
-                            className='small-image' 
-                            onMouseEnter={() => setIndex(ind)} />
+                            <div key={ind} className="small-image-container">
+                                <Image
+                                    src={urlFor(item)} 
+                                    alt={`Thumbnail of ${name}`}
+                                    width={100} 
+                                    height={100} // You can adjust the width and height as necessary
+                                    onMouseEnter={() => setIndex(ind)}
+                                    className='small-image'
+                                />
+                            </div>
                         ))}
                     </div>
                     <div className='big-image-container'>
-                        <img src={urlFor(image && image[index])} />
+                        <Image
+                            src={urlFor(image && image[index])}
+                            alt={`Large image of ${name}`}
+                            width={500} // Specify the width and height
+                            height={500}
+                        />
                     </div>
                 </div>
                 <div className='product-details'>
                     <div className='name-and-category'>
                         <h3>{name}</h3>
-                        <span>{tags}</span>   
+                        <span>{Array.isArray(tags) ? tags.join(', ') : tags}</span>
                     </div>
                     <div className='size'>
                         <p>SELECT SIZE</p>
@@ -51,13 +58,15 @@ const ProductDetails = ({products, product}) => {
                         <h4>Quantity: </h4>
                         <div>
                             <span className='minus' onClick={decQty}><AiOutlineMinus /></span>
-                            <span className='num' onClick=''>{qty}</span>
+                            <span className='num'>{qty}</span>
                             <span className='plus' onClick={incQty}><AiOutlinePlus /></span>
                         </div>
                     </div>
                     <div className='add-to-cart'>
-                        <button className='btn' type='button' onClick={() => onAdd(product, qty)}><CgShoppingCart size={20} />Add to Cart</button>
-                        <p className='price'>${price}.00</p>  
+                        <button className='btn' type='button' onClick={() => onAdd(product, qty)}>
+                            <CgShoppingCart size={20} /> Add to Cart
+                        </button>
+                        <p className='price'>${price}.00</p>
                     </div>
                 </div>
             </div>
@@ -67,38 +76,38 @@ const ProductDetails = ({products, product}) => {
                     <div className="desc-background">
                         Overview
                     </div>
-                    <h2>Product Information</h2>  
+                    <h2>Product Information</h2>
                 </div>
                 <div className='desc-details'>
                     <h4>PRODUCT DETAILS</h4>
-                    <p>{details[0].children[0].text}</p>  
+                    <p>{details[0].children[0].text}</p>
                 </div>
                 <div className='desc-care'>
                     <h4>PRODUCT CARE</h4>
                     <ul>
-                    {careList.map(list => (
-                        <li>{list}</li>
-                    ))}
+                        {careList.map((list, index) => (
+                            <li key={index}>{list}</li>
+                        ))}
                     </ul>
                 </div>
             </div>
         </div>
-    )
-}
-export default ProductDetails
+    );
+};
 
-export const getStaticProps = async ({params: {slug}}) => {
+export default ProductDetails;
+
+export const getStaticProps = async ({ params: { slug } }) => {
     const query = `*[_type == "product" && slug.current == '${slug}'][0]`;
-    const productsQuery = '*[_type == "product"]'
+    const productsQuery = '*[_type == "product"]';
     const product = await client.fetch(query);
-    const products = await client.fetch(productsQuery)
-  
-    return {
-      props: { products, product }
-    }
-}
+    const products = await client.fetch(productsQuery);
 
-// Generates `/product/1` and `/product/2`
+    return {
+        props: { products, product }
+    };
+};
+
 export const getStaticPaths = async () => {
     const query = `*[_type == "product"] {
         slug {
@@ -115,7 +124,7 @@ export const getStaticPaths = async () => {
     }));
 
     return {
-      paths,
-      fallback: 'blocking'
-    }
-}
+        paths,
+        fallback: 'blocking'
+    };
+};

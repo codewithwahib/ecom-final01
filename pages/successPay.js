@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { BsBagCheckFill } from 'react-icons/bs';
 
 import { useStateContext } from '../context/StateContext';
 import { runConfetti } from '../lib/utils';
 
-const successPay = () => {
+const SuccessPay = () => { // Renamed to start with uppercase
     const { setCartItems, setTotalPrice, setTotalQty } = useStateContext();
 
     useEffect(() => {
         localStorage.clear();
-        setCartItems([]);
-        setTotalPrice(0);
-        setTotalQty(0);
-        runConfetti();
-    }, []);
+        setCartItems([]);  // Clear cart
+        setTotalPrice(0);  // Reset total price
+        setTotalQty(0);    // Reset total quantity
+        runConfetti();     // Trigger confetti animation
+    }, [setCartItems, setTotalPrice, setTotalQty]); // Added setters as dependencies
 
     return (
         <div className='success'>
@@ -35,7 +35,7 @@ const successPay = () => {
                 </button>
             </Link>
         </div>
-    )
-}
+    );
+};
 
-export default successPay
+export default SuccessPay; // Export with uppercase component name
